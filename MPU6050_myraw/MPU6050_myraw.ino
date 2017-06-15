@@ -11,6 +11,14 @@ MPU6050 accelgyro;
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 int xangle;
+double gx_correct;
+double gy_correct;
+double gz_correct;
+double accXangle;
+double accYangle;
+double compAngleX;
+double compAngleY;
+double timer;
 
 #define LED_PIN 13
 bool blinkState = false;
@@ -45,24 +53,34 @@ void setup() {
     // configure Arduino LED for
     pinMode(LED_PIN, OUTPUT);
 
-    xangle = 0;
+  
+    compAngleX = 0;
+    compAngleY = 0;
 }
 
 void loop() {
     // read raw accel/gyro measurements from device
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
-    //Accelerometer in g's umwandeln
-    ax_correct = ax / 16348;
-    ay_correct = ay / 16348;
-    az_correct = az / 16348;
+    // Convert accelerometer raw values to degrees
+    accXangle = (atan2(ay, az) + PI) * RAD_TO_DEG;
+    accYangle = (atan2(ax, az) + PI) * RAD_TO_DEG;
 
     //Gyroskop in grad/sec umwandeln
     gx_correct = gx / 131;
     gy_correct = gy / 131;
     gz_correct = gz / 131;
 
+    // Komplämentärer Filter
+    compAngleX = (0.98 * (compAngleX + (gx_correct * (double)(micros() - timer) / 1000000))) + (0.02 * accXangle);
+    compAngleY = (0.98 * (compAngleY + (gy_correct * (double)(micros() - timer) / 1000000))) + (0.02 * accYangle);
 
+    timer = micros();
+
+    // Serielle Ausgabe
+    Serial.print(compAngleX); Serial.print("\t");
+    Serial.print(compAngleY); Serial.print("\t");
+    /*
     Serial.print("a/g:\t");
     Serial.print(ax); Serial.print("\t");
     Serial.print(ay); Serial.print("\t");
@@ -70,11 +88,7 @@ void loop() {
     Serial.print(gx); Serial.print("\t");
     Serial.print(gy); Serial.print("\t");
     Serial.print(gz); Serial.print("\t");
-
-
-
-    xangle = 0.98 * (xangle * 0.978 + gx * 0.012) + 0.02 * (ax);
-    Serial.println(xangle);
+    */
 
     // blink LED to indicate activity
     blinkState = !blinkState;
