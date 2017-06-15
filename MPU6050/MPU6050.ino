@@ -19,6 +19,7 @@ double accYangle;
 double compAngleX;
 double compAngleY;
 double timer;
+double delta;
 
 #define LED_PIN 13
 bool blinkState = false;
@@ -45,17 +46,20 @@ void setup() {
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 
     // Custom Offsets
-    accelgyro.setXGyroOffset(36);
-    accelgyro.setYGyroOffset(-85);
+    accelgyro.setXGyroOffset(39);
+    accelgyro.setYGyroOffset(-88);
     accelgyro.setZGyroOffset(-6);
+    accelgyro.setXAccelOffset(-1994);
+    accelgyro.setYAccelOffset(-382);
+    accelgyro.setZAccelOffset(1245);
 
 
     // configure Arduino LED for
     pinMode(LED_PIN, OUTPUT);
 
-  
-    compAngleX = 0;
-    compAngleY = 0;
+
+    compAngleY = 180;
+    compAngleX = 180;
 }
 
 void loop() {
@@ -73,22 +77,14 @@ void loop() {
 
     // Komplämentärer Filter
     compAngleX = (0.98 * (compAngleX + (gx_correct * (double)(micros() - timer) / 1000000))) + (0.02 * accXangle);
-    compAngleY = (0.98 * (compAngleY + (gy_correct * (double)(micros() - timer) / 1000000))) + (0.02 * accYangle);
+    //compAngleY = (0.98 * (compAngleY + (gy_correct * (double)(micros() - timer) / 1000000))) + (0.02 * accYangle);
+    delta = 180-compAngleX;
 
     timer = micros();
 
     // Serielle Ausgabe
-    Serial.print(compAngleX); Serial.print("\t");
-    Serial.print(compAngleY); Serial.print("\t");
-    /*
-    Serial.print("a/g:\t");
-    Serial.print(ax); Serial.print("\t");
-    Serial.print(ay); Serial.print("\t");
-    Serial.print(az); Serial.print("\t");
-    Serial.print(gx); Serial.print("\t");
-    Serial.print(gy); Serial.print("\t");
-    Serial.print(gz); Serial.print("\t");
-    */
+      //Serial.println(compAngleX);
+    Serial.println(delta);
 
     // blink LED to indicate activity
     blinkState = !blinkState;
