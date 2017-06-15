@@ -17,7 +17,6 @@ double gz_correct;
 double accXangle;
 double accYangle;
 double compAngleX;
-double compAngleY;
 double timer;
 double delta;
 
@@ -57,8 +56,6 @@ void setup() {
     // configure Arduino LED for
     pinMode(LED_PIN, OUTPUT);
 
-
-    compAngleY = 180;
     compAngleX = 180;
 }
 
@@ -77,7 +74,6 @@ void loop() {
 
     // Komplämentärer Filter
     compAngleX = (0.98 * (compAngleX + (gx_correct * (double)(micros() - timer) / 1000000))) + (0.02 * accXangle);
-    //compAngleY = (0.98 * (compAngleY + (gy_correct * (double)(micros() - timer) / 1000000))) + (0.02 * accYangle);
     delta = 180-compAngleX;
 
     timer = micros();

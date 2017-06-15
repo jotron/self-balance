@@ -9,7 +9,7 @@ int IN3 = 6;
 int IN4 = 7;
 int speedPinB = 10; // Needs to be a PWM pin to be able to control motor speed
 
-  
+
 void setup()
 {
  // Set the output pins
@@ -21,28 +21,29 @@ void setup()
  pinMode(speedPinB,OUTPUT);
 }
 
-void loop()
-{
- analogWrite(speedPinA, 255); // Sets speed variable via PWM
- analogWrite(speedPinB, 255); // Sets speed variable via PWM
- // Rotate the Motor A clockwise
+void loop() {
+ analogWrite(speedPinA, 100); // Sets speed variable via PWM
+ analogWrite(speedPinB, 100); // Sets speed variable via PWM
+
+ // Motor A (MPU--Seite von Kühler-Seite) forwärts
  digitalWrite(IN1, HIGH);
  digitalWrite(IN2, LOW);
  delay(2000);
- // Motor A
+ // festhalten
  digitalWrite(IN1, HIGH);
  digitalWrite(IN2, HIGH);
- delay(500);
+ delay(2000);
 
- // Rotate the Motor B clockwise
+ // Motor B (Arduino-Seite) forwärts
  digitalWrite(IN3, HIGH);
  digitalWrite(IN4, LOW);
  delay(2000);
- // Motor B
+ // festhalten
  digitalWrite(IN3, HIGH);
  digitalWrite(IN4, HIGH);
- delay(500);
+ delay(2000);
 
+ /*
  // Rotates the Motor A counter-clockwise
  digitalWrite(IN1, LOW);
  digitalWrite(IN2, HIGH);
@@ -59,5 +60,5 @@ void loop()
  // Motor B
  digitalWrite(IN3, HIGH);
  digitalWrite(IN4, HIGH);
- delay(500);
+ delay(500);*/
 }
