@@ -36,11 +36,11 @@ void setup() {
     Serial.println("Testing device connections...");
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 
+    // Custom Offsets
+    accelgyro.setXGyroOffset(36);
+    accelgyro.setYGyroOffset(-85);
+    accelgyro.setZGyroOffset(-6);
 
-    //accelgyro.setXGyroOffset(220);
-    //accelgyro.setYGyroOffset(76);
-    //accelgyro.setZGyroOffset(-85);
-    
 
     // configure Arduino LED for
     pinMode(LED_PIN, OUTPUT);
@@ -52,9 +52,16 @@ void loop() {
     // read raw accel/gyro measurements from device
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
-    // these methods (and a few others) are also available
-    //accelgyro.getAcceleration(&ax, &ay, &az);
-    //accelgyro.getRotation(&gx, &gy, &gz);
+    //Accelerometer in g's umwandeln
+    ax_correct = ax / 16348;
+    ay_correct = ay / 16348;
+    az_correct = az / 16348;
+
+    //Gyroskop in grad/sec umwandeln
+    gx_correct = gx / 131;
+    gy_correct = gy / 131;
+    gz_correct = gz / 131;
+
 
     Serial.print("a/g:\t");
     Serial.print(ax); Serial.print("\t");
@@ -63,6 +70,8 @@ void loop() {
     Serial.print(gx); Serial.print("\t");
     Serial.print(gy); Serial.print("\t");
     Serial.print(gz); Serial.print("\t");
+
+
 
     xangle = 0.98 * (xangle * 0.978 + gx * 0.012) + 0.02 * (ax);
     Serial.println(xangle);
