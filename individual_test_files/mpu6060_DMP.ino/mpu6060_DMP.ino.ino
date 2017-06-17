@@ -1,18 +1,19 @@
-// I2Cdev and MPU6050 must be installed as libraries, or else the .cpp/.h files
-// for both classes must be in the include path of your project
-#include "PID_v1.h"
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
+//#include "MPU6050.h" // not necessary if using MotionApps include file
+
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
 #endif
 
-//Gyroskop-Accelerometer initialisieren
 MPU6050 mpu;
 
-// Variablen definieren MPU
+#define LED_PIN 13
+bool blinkState = false;
+
+// MPU control/status vars
 bool dmpReady = false;  // set true if DMP init was successful
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
@@ -20,36 +21,15 @@ uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
 uint16_t fifoCount;     // count of all bytes currently in FIFO
 uint8_t fifoBuffer[64]; // FIFO storage buffer
 
+// orientation/motion vars
 Quaternion q;           // [w, x, y, z]         quaternion container
 VectorFloat gravity;    // [x, y, z]            gravity vector
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
-double pid_input; // Neigung gegenüber Senkrecht-Achse
-
-// Input Motor A
-int speedcalc = 0;
-int IN1 = 4;
-int IN2 = 5;
-int speedPinA = 9;
-
-//Input Motor B
-int IN3 = 6;
-int IN4 = 7;
-int speedPinB = 10;
-
-//PID
-double pid_output;
-double Kp = 5;   //Schwankstärke
-double Kd = 0; // beruhigen
-double Ki = 0; // beruhigen
-PID pid(&pid_input, &pid_output, 0, Kp, Ki, Kd, DIRECT);
-
-
-#define LED_PIN 13
-bool blinkState = false;
 
 // ================================================================
-// ===              MPUINTERRUPT DETECTION ROUTINE              ===
+// ===               INTERRUPT DETECTION ROUTINE                ===
 // ================================================================
+
 volatile bool mpuInterrupt = false;
 // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
@@ -59,6 +39,7 @@ void dmpDataReady() {
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
+
 void mpu_init() {
   // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -119,49 +100,6 @@ void mpu_init() {
     // configure LED for output
     pinMode(LED_PIN, OUTPUT);
 }
-void setup() {
-
-    //Accelereometer-Garoskop initialisieren
-    mpu_init();
-
-    // configure Arduino LED for
-    pinMode(LED_PIN, OUTPUT);
-
-    // L298N Pins
-    pinMode(IN1, OUTPUT);
-    pinMode(IN2, OUTPUT);
-    pinMode(IN3, OUTPUT);
-    pinMode(IN4, OUTPUT);
-    pinMode(speedPinA,OUTPUT);
-    pinMode(speedPinB,OUTPUT);
-
-    //Setup PID
-    pid.SetMode(AUTOMATIC);
-    pid.SetSampleTime(10);
-    pid.SetOutputLimits(-235, 235);
-}
-
-// ================================================================
-// ===                         CORE                             ===
-// ================================================================
-void motors(int speed) {
-  if (speed > 0) {
-        digitalWrite(IN1, HIGH);
-        digitalWrite(IN2, LOW);
-
-        digitalWrite(IN3, LOW);
-        digitalWrite(IN4, HIGH);
-  }
-  if (speed < 0) {
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, HIGH);
-
-      digitalWrite(IN3, HIGH);
-      digitalWrite(IN4, LOW);
-    }
-    analogWrite(speedPinA, abs(speed) + 20);
-    analogWrite(speedPinB, abs(speed) + 20);
-}
 void mpu_get() {
   // if programming failed, don't try to do anything
     if (!dmpReady) return;
@@ -192,7 +130,7 @@ void mpu_get() {
 
         // read a packet from FIFO
         mpu.getFIFOBytes(fifoBuffer, packetSize);
-
+        
         // track FIFO count here in case there is > 1 packet available
         // (this lets us immediately read more without waiting for an interrupt)
         fifoCount -= packetSize;
@@ -201,28 +139,23 @@ void mpu_get() {
         mpu.dmpGetQuaternion(&q, fifoBuffer);
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-
-        pid_input = ypr[2] * 180/M_PI;
+        Serial.print("ypr\t");
+        Serial.print(ypr[0] * 180/M_PI);
+        Serial.print("\t");
+        Serial.print(ypr[1] * 180/M_PI);
+        Serial.print("\t");
+        Serial.println(ypr[2] * 180/M_PI);
 
         // blink LED to indicate activity
         blinkState = !blinkState;
         digitalWrite(LED_PIN, blinkState);
     }
 }
-void loop() {
-    // Winkelmessung
-    mpu_get();
-    Serial.println(pid_input);
-    Serial.print(pid_output);
-
-    //PID
-    pid.Compute();
-
-    //L298N
-    motors(pid_output);
-
-    // blink LED to indicate activity
-    blinkState = !blinkState;
-    digitalWrite(LED_PIN, blinkState);
-    delay(10);
+void setup() {
+  mpu_init();
 }
+
+void loop() {
+  mpu_get();
+}
+
