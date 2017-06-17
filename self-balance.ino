@@ -23,7 +23,6 @@ uint8_t fifoBuffer[64]; // FIFO storage buffer
 Quaternion q;           // [w, x, y, z]         quaternion container
 VectorFloat gravity;    // [x, y, z]            gravity vector
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
-double pid_input; // Neigung gegenüber Senkrecht-Achse
 
 // Input Motor A
 int speedcalc = 0;
@@ -37,15 +36,13 @@ int IN4 = 7;
 int speedPinB = 10;
 
 //PID
-double pid_output;
-double Kp = 5;   //Schwankstärke
+double pid_output = 0.0;
+double pid_input = 512.0; // Neigung gegenüber Senkrecht-Achse
+double Kp = 1;   //Schwankstärke
 double Kd = 0; // beruhigen
 double Ki = 0; // beruhigen
-PID pid(&pid_input, &pid_output, 0, Kp, Ki, Kd, DIRECT);
+PID pid(&pid_input, &pid_output, 512, Kp, Ki, Kd, DIRECT);
 
-
-#define LED_PIN 13
-bool blinkState = false;
 
 // ================================================================
 // ===              MPUINTERRUPT DETECTION ROUTINE              ===
@@ -116,16 +113,12 @@ void mpu_init() {
         Serial.println(F(")"));
     }
 
-    // configure LED for output
-    pinMode(LED_PIN, OUTPUT);
 }
 void setup() {
 
     //Accelereometer-Garoskop initialisieren
     mpu_init();
 
-    // configure Arduino LED for
-    pinMode(LED_PIN, OUTPUT);
 
     // L298N Pins
     pinMode(IN1, OUTPUT);
@@ -137,30 +130,30 @@ void setup() {
 
     //Setup PID
     pid.SetMode(AUTOMATIC);
-    pid.SetSampleTime(10);
-    pid.SetOutputLimits(-235, 235);
+    pid.SetSampleTime(100);
+    pid.SetOutputLimits(0, 465);
 }
 
 // ================================================================
 // ===                         CORE                             ===
 // ================================================================
-void motors(int speed) {
-  if (speed > 0) {
+void motors() {
+  if (pid_output > 0) {
         digitalWrite(IN1, HIGH);
         digitalWrite(IN2, LOW);
 
         digitalWrite(IN3, LOW);
         digitalWrite(IN4, HIGH);
   }
-  if (speed < 0) {
+  else {
       digitalWrite(IN1, LOW);
       digitalWrite(IN2, HIGH);
 
       digitalWrite(IN3, HIGH);
       digitalWrite(IN4, LOW);
-    }
-    analogWrite(speedPinA, abs(speed) + 20);
-    analogWrite(speedPinB, abs(speed) + 20);
+   }
+   analogWrite(speedPinA, abs(pid_output) + 20);
+   analogWrite(speedPinB, abs(pid_output) + 20);
 }
 void mpu_get() {
   // if programming failed, don't try to do anything
@@ -202,27 +195,20 @@ void mpu_get() {
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-        pid_input = ypr[2] * 180/M_PI;
-
-        // blink LED to indicate activity
-        blinkState = !blinkState;
-        digitalWrite(LED_PIN, blinkState);
+        pid_input = (ypr[2] * 180/M_PI + 90) * 5.69;
+    
     }
 }
 void loop() {
     // Winkelmessung
     mpu_get();
-    Serial.println(pid_input);
-    Serial.print(pid_output);
+    Serial.println(String(pid_input) + " " + String(pid_output));
 
     //PID
     pid.Compute();
 
     //L298N
-    motors(pid_output);
+    motors();
 
-    // blink LED to indicate activity
-    blinkState = !blinkState;
-    digitalWrite(LED_PIN, blinkState);
     delay(10);
 }

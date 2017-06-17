@@ -30,17 +30,8 @@ void loop() {
  digitalWrite(IN2, LOW);
  delay(2000);
  // festhalten
- digitalWrite(IN1, HIGH);
+ digitalWrite(IN1, LOW);
  digitalWrite(IN2, HIGH);
- delay(2000);
-
- // Motor B (Arduino-Seite) forwärts
- digitalWrite(IN3, HIGH);
- digitalWrite(IN4, LOW);
- delay(2000);
- // festhalten
- digitalWrite(IN3, HIGH);
- digitalWrite(IN4, HIGH);
  delay(2000);
 
  /*
