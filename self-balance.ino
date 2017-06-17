@@ -4,6 +4,7 @@
 #include "MPU6050.h"
 #include "Wire.h"
 
+
 //Gyroskop-Accelerometer initialisieren
 MPU6050 accelgyro;
 
@@ -17,6 +18,7 @@ double timer;
 double delta; // Neigung gegenüber Gravitations-Achse
 
 // Input Motor A
+int speedcalc = 0;
 int IN1 = 4;
 int IN2 = 5;
 int speedPinA = 9;
@@ -96,52 +98,28 @@ void loop() {
     //   Serial.println(delta);
 
     //L298N
-    if (-0.5 > delta > 0.5) {
-      digitalWrite(IN1, HIGH);
-      digitalWrite(IN2, HIGH);
+    if (delta > 0) {
+        digitalWrite(IN1, HIGH);
+        digitalWrite(IN2, LOW);
 
-      digitalWrite(IN3, HIGH);
-      digitalWrite(IN4, HIGH);
-    }
-    if (10 > delta > 0.5) {
-      analogWrite(speedPinA, 50); // Sets speed variable via PWM
-      analogWrite(speedPinB, 50); // Sets speed variable via PWM
-
+        digitalWrite(IN3, LOW);
+        digitalWrite(IN4, HIGH);
+      }
+    if (delta < 0) {
       digitalWrite(IN1, LOW);
       digitalWrite(IN2, HIGH);
 
-      digitalWrite(IN3, LOW);
-      digitalWrite(IN4, HIGH);
-    }
-    if (-10 > delta < -0.5) {
-      analogWrite(speedPinA, 50); // Sets speed variable via PWM
-      analogWrite(speedPinB, 50); // Sets speed variable via PWM
-
-      digitalWrite(IN1, HIGH);
-      digitalWrite(IN2, LOW);
-
-      digitalWrite(IN3, LOW);
-      digitalWrite(IN4, LOW);
-    }
-    if (delta > 10) {
-      analogWrite(speedPinA, 50); // Sets speed variable via PWM
-      analogWrite(speedPinB, 50); // Sets speed variable via PWM
-
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, HIGH);
-
-      digitalWrite(IN3, LOW);
-      digitalWrite(IN4, HIGH);
-    }
-    if (delta < -10) {
-      analogWrite(speedPinA, 50); // Sets speed variable via PWM
-      analogWrite(speedPinB, 50); // Sets speed variable via PWM
-
-      digitalWrite(IN1, HIGH);
-      digitalWrite(IN2, LOW);
-
       digitalWrite(IN3, HIGH);
       digitalWrite(IN4, LOW);
+    }
+    if (abs(delta) < 4) {
+      speedcalc = abs(delta) * 50;
+      analogWrite(speedPinA, speedcalc); // Sets speed variable via PWM
+      analogWrite(speedPinB, speedcalc); // Sets speed variable via PWM
+    }
+    if (abs(delta) > 4) {
+      analogWrite(speedPinA, 230); // Sets speed variable via PWM
+      analogWrite(speedPinB, 230); // Sets speed variable via PWM
     }
 
     // blink LED to indicate activity
