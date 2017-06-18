@@ -36,12 +36,14 @@ int IN4 = 7;
 int speedPinB = 10;
 
 //PID
+double delta;
 double pid_output = 0.0;
-double pid_input = 512.0; // Neigung gegenüber Senkrecht-Achse
-double Kp = 1;   //Schwankstärke
-double Kd = 0; // beruhigen
+double pid_input = 255; // Neigung gegenüber Senkrecht-Achse
+double setpoint = 255;
+double Kp = 10;   //Schwankstärke
+double Kd = 2; // beruhigen
 double Ki = 0; // beruhigen
-PID pid(&pid_input, &pid_output, 512, Kp, Ki, Kd, DIRECT);
+PID pid(&pid_input, &pid_output, &setpoint, Kp, Ki, Kd, DIRECT);
 
 
 // ================================================================
@@ -130,15 +132,15 @@ void setup() {
 
     //Setup PID
     pid.SetMode(AUTOMATIC);
-    pid.SetSampleTime(100);
-    pid.SetOutputLimits(0, 465);
+    pid.SetSampleTime(10);
+    //pid.SetOutputLimits(0, 512);
 }
 
 // ================================================================
 // ===                         CORE                             ===
 // ================================================================
 void motors() {
-  if (pid_output > 0) {
+  if (delta > 0) {
         digitalWrite(IN1, HIGH);
         digitalWrite(IN2, LOW);
 
@@ -152,8 +154,8 @@ void motors() {
       digitalWrite(IN3, HIGH);
       digitalWrite(IN4, LOW);
    }
-   analogWrite(speedPinA, abs(pid_output) + 20);
-   analogWrite(speedPinB, abs(pid_output) + 20);
+   analogWrite(speedPinA, pid_output + 20);
+   analogWrite(speedPinB, pid_output + 20);
 }
 void mpu_get() {
   // if programming failed, don't try to do anything
@@ -195,7 +197,9 @@ void mpu_get() {
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-        pid_input = (ypr[2] * 180/M_PI + 90) * 5.69;
+        
+        delta = ypr[2] * 180/M_PI;
+        pid_input = 255 - abs(ypr[2] * 180/M_PI) * 2.83;
     
     }
 }
