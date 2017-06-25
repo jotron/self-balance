@@ -2,7 +2,7 @@
 
 ### Ziel
 
-Ziel ist es einen Roboter mit 2-Rädern zu erfinden, der von selbst gerade stehen kann in dem er sich ausbalanciert.
+Ziel ist es einen Roboter mit 2-Rädern zu bauen, der von selbst gerade stehen kann in dem er sich ausbalanciert.
 
 Mit einem Sensor soll der Roboter die Abneigung zur Senkrecht-Achse messen. Daraus folgend soll er die Motoren in die richtige Richtung stark genug antreiben.
 
@@ -13,6 +13,7 @@ Mit einem Sensor soll der Roboter die Abneigung zur Senkrecht-Achse messen. Dara
 - Arduino Uno
 - L298n H-Brücke
 - MPU-6050 Gyroskop-Accelerometer
+- 2 DC-Motoren
 
 ### Schaltskizze
 
@@ -27,23 +28,47 @@ Mit einem Sensor soll der Roboter die Abneigung zur Senkrecht-Achse messen. Dara
 
 ### Arbeitsvorgang
 
-##### MPU-6050
+1. [MPU-6050 Sensordaten ablesen](individual_test_files/mpu6050/MPU6050.md)
+2. [Motoren ansteuern](individual_test_files/l298n/l298n.md)
+3. Steuerung von Motoren in Abhängigkeit der Neigung
 
-Als aller erstes haben wir den Sensor mit dem Arduino verbunden und versucht die rohen Daten abzulesen. Dabei geholfen hat uns die [offzielle Arduino Dokumentation](https://playground.arduino.cc/Main/MPU-6050) sowie [ein Tutorial](https://create.arduino.cc/projecthub/Aritro/getting-started-with-imu-6-dof-motion-sensor-96e066).
+##### 3. Steurung in Abhängigkeit der Neigung
 
-Wir haben anfänglich versucht die rohen Accelerometer und Gyroskop-Werte mittels [Komplementären-Filter](https://bayesianadventures.wordpress.com/2013/10/20/gyroscopes-accelerometers-and-the-complementary-filter/) zu kombinieren um den Winkel zur Senkrechtachse zu bekommen. Das hat zwar funktioniert war aber rechenaufwendig. Deshalb haben wir uns schlussendlich doch auf den *Digital Motion Processor* des Sensor's verlassen. Der Sensor kann nämlich die Daten selber schon auswerten und praktisch die Neigung zurückgeben. ([hilfreiches Beispiel-Programm](https://github.com/jrowberg/i2cdevlib/blob/master/Arduino/MPU6050/examples/MPU6050_DMP6/MPU6050_DMP6.ino)).
+Es musste ein System entwickelt werden welches je nach Neigung des Roboters, die Motoren richtig ansteuerte. Dies erwies sich als ausserordentlich schwierig.
+Wir haben allerdings eine Bibliothek gefunden die uns diese Aufgabe erleichtert: die PID Bibliothek.
 
-Um die Präzision zu erhöhen mussten wir die Sensor-spezifische Fehlabneigungen berechnen. Dazu geholfen hat uns das [Skript](http://wired.chillibasket.com/2015/01/calibrating-mpu6050/) von *Luis Ródenas*.
+Wikipedia: "Der [PID-Regler](https://de.wikipedia.org/wiki/Regler#PID-Regler) (proportional–integral–derivative controller) besteht aus den Anteilen des P-Gliedes, des I-Gliedes und des D-Gliedes."
+Man muss dem Regler lediglich einen Input vorschreiben und das gewünschte Resultat einstellen. Der Regler berechnet dann den Weg der minimalen Abweichung.
 
-##### L298n mit 2 DC-Motoren
+Die Anpassungsparameter sind Kp, Ki & Kd.
 
-Als nächstes haben wir die Motoren mit der H-Brücke verkabelt und diese zur externen Stomquelle und zum Arduino. Das Wissen dazu haben wir aus diesen beiden Tutorials erlernt: [Dronebotworkshop](http://dronebotworkshop.com/dc-motors-l298n-h-bridge/), [QQtrading](http://qqtrading.com.my/stepper-motor-driver-module-L298N).
+```c
+#include <PID_v1.h>
 
-Eine Schwierigkeit bestand darin wie man den Strom zuführen sollte. Wir wollten nämlich auf zwei verschiedene Stromquellen verzichten. Schlussendlich haben wir uns entschieden den Arduino über die H-Brücke zu füttern. Diese besitzt nämlich einen 5V-Regulator. Das einzige Risiko dabei war, dass die Motoren eventuell zu viel elektrischen Lärm machen würden. Dies hat sich aber nicht bestätigt.
+//Variablen und Parameter definieren
+double pid_output = 0.0;
+double pid_input = 255; // Neigung gegenüber Senkrecht-Achse
+double setpoint = 255;
+double Kp = 10;   //Schwankstärke
+double Kd = 2; // beruhigen
+double Ki = 0; // beruhigen
 
-##### Steuerung
+//Specify the links and initial tuning parameters
+PID pid(&pid_input, &pid_output, &setpoint, Kp, Ki, Kd, DIRECT);
 
-Zum Schluss musste das Fahrzeug vollständig zusammengebaut werden.
+void setup()
+{
+  //anschalten
+  pid.SetMode(AUTOMATIC);
+  
+  //Alle 10ms neuberechnen
+  pid.SetSampleTime(10);
+}
 
-Ausserdem mussten ein System entwickeln welches je nach Neigung des Roboters, die Motoren richtig ansteuerte. Dies erwies sich als ausserordentlich schwierig.
+void loop()
+{
+  pid.Compute();
+}
+```
 
+Der Regler schreibt automatisch in den pid_output. In unserem Programm bezeichnetein pid_input von 255 eine Neigung von 90° gegenüber der Senkrechtachse und ein pid_input von 0 einen 0° Winkel. Die Richtung der Motoren wird separat manuell berechnet.
