@@ -36,6 +36,11 @@ int IN4 = 7;
 int speedPinB = 10;
 
 //PID
+/* Der Sensor misst den Winkel von -180 bis + 180
+ * Wir erweitern den Betrag davon auf 255 und setzen 255 als 0° und Zielpunkt für das PID 
+ * Der PID gibt, dann wiederum einen Output von 0 bis 255 (235) mit dem man direkt
+ * die Motoren ansteuern kann über PWM
+*/
 double delta;
 double pid_output = 0.0;
 double pid_input = 255; // Neigung gegenüber Senkrecht-Achse
@@ -80,7 +85,7 @@ void mpu_init() {
     Serial.println(F("Initializing DMP..."));
     devStatus = mpu.dmpInitialize();
 
-    // supply your own gyro offsets here, scaled for min sensitivity
+    // Unsere eigenen gemessenen Offsets
     mpu.setXGyroOffset(41);
     mpu.setYGyroOffset(-92);
     mpu.setZGyroOffset(-23);
@@ -141,21 +146,24 @@ void setup() {
 // ================================================================
 void motors() {
   if (delta > 0) {
-        digitalWrite(IN1, HIGH);
-        digitalWrite(IN2, LOW);
-
+        digitalWrite(IN1, LOW);
+        digitalWrite(IN2, HIGH);
+  
         digitalWrite(IN3, LOW);
         digitalWrite(IN4, HIGH);
   }
   else {
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, HIGH);
+        digitalWrite(IN1, HIGH);
+        digitalWrite(IN2, LOW);
 
-      digitalWrite(IN3, HIGH);
-      digitalWrite(IN4, LOW);
+        digitalWrite(IN3, HIGH);
+        digitalWrite(IN4, LOW);
    }
-   analogWrite(speedPinA, pid_output + 20);
-   analogWrite(speedPinB, pid_output + 20);
+   // aktivieren für die PID kontrollierte Version
+   //analogWrite(speedPinA, pid_output + 20);
+   //analogWrite(speedPinB, pid_output + 20);
+   analogWrite(speedPinA, 100);
+   analogWrite(speedPinB, 100);
 }
 void mpu_get() {
   // if programming failed, don't try to do anything
@@ -206,10 +214,12 @@ void mpu_get() {
 void loop() {
     // Winkelmessung
     mpu_get();
-    Serial.println(String(pid_input) + " " + String(pid_output));
-
-    //PID
-    pid.Compute();
+    //Serial.println(String(pid_input) + " " + String(pid_output));
+    Serial.println(delta);
+    
+    
+    // aktivieren fuer die PID-Kontrollierte Version
+    //pid.Compute();
 
     //L298N
     motors();
