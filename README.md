@@ -71,4 +71,4 @@ void loop()
 }
 ```
 
-Der Regler schreibt automatisch in den pid_output. In unserem Programm bezeichnetein pid_input von 255 eine Neigung von 90° gegenüber der Senkrechtachse und ein pid_input von 0 einen 0° Winkel. Die Richtung der Motoren wird separat manuell berechnet.
+Der Regler schreibt automatisch in den pid_output. In unserem Programm bezeichnetein pid_input von 255 eine Neigung von 0° gegenüber der Senkrechtachse und ein pid_input von 0 einen +-90° Winkel. Die Richtung der Motoren wird separat manuell berechnet.
