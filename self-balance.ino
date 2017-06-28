@@ -214,8 +214,9 @@ void mpu_get() {
 void loop() {
     // Winkelmessung
     mpu_get();
-    //Serial.println(String(pid_input) + " " + String(pid_output));
-    Serial.println(delta);
+    Serial.print("PID INPUT: " + String(pid_input));
+    Serial.print(" PID OUTPUT: " + String(pid_output));
+    Serial.println(" Winkel: " + String(delta));
     
     
     // aktivieren fuer die PID-Kontrollierte Version
