@@ -11,9 +11,9 @@ Mit einem Sensor soll der Roboter die Abneigung zur Senkrecht-Achse messen. Dara
 ### Bauteile
 
 - Arduino Uno
-- L298n H-Brücke
-- MPU-6050 Gyroskop-Accelerometer
-- 2 DC-Motoren
+- L298N Motor Driver Board Dual H-Bridge ([OEM](http://www.play-zone.ch/de/l298n-motor-driver-board-schrittmotor-treiber-modul-1550.html))
+- MPU-6050 Gyroskop + Accelerometer ([Invensense](http://www.play-zone.ch/de/mpu-6050-accelerometer-gyro.html))
+- 2 DC-Motoren (mit Getriebe)
 
 ### Schaltskizze
 
