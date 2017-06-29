@@ -1,5 +1,7 @@
 # Selbst-Balancierender Roboter
 
+![Robot](circuit-diagramms/image.png)
+
 ### Ziel
 
 Ziel ist es einen Roboter mit 2-Rädern zu bauen, der von selbst gerade stehen kann in dem er sich ausbalanciert.
@@ -33,6 +35,8 @@ Mit einem Sensor soll der Roboter die Abneigung zur Senkrecht-Achse messen. Dara
 3. [Steuerung von Motoren in Abhängigkeit der Neigung (PID)](individual_files/PID/PID.md)
 
 ### Fazit
+
+[Kleines Video](circuit-diagramms/IMG_3839.MOV)
 
 Das Projekt hatte sehr hohe Ansprüche. Schlussendlich sind wir mit der Realisation unseres Projekts zufrieden. Der Roboter balanciert zwar nicht stabil aber theoretisch haben wir alles richtig gemacht. Wir wissen noch nicht ob der Fehler technischer Natur ist oder aufgrund der Steuerung. 
 Einerseits könnte das Problem daran liegen, dass unsere Motoren zu langsam reagieren, da bei jedem Richtungswechsel die Trägheit überwunden werden muss.  
