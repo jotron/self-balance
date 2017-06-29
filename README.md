@@ -1,6 +1,6 @@
 # Selbst-Balancierender Roboter
 
-![Robot](circuit-diagramms/image.png)
+![Robot](graphics-diagramms/image.png)
 
 ### Ziel
 
@@ -19,7 +19,7 @@ Mit einem Sensor soll der Roboter die Abneigung zur Senkrecht-Achse messen. Dara
 
 ### Schaltskizze
 
-![Sketch](circuit-diagramms/Sketch.png)
+![Sketch](graphics-diagramms/Sketch.png)
 
 ### Libraries 
 
@@ -36,7 +36,7 @@ Mit einem Sensor soll der Roboter die Abneigung zur Senkrecht-Achse messen. Dara
 
 ### Fazit
 
-[Kleines Video](circuit-diagramms/IMG_3839.MOV)
+[Kleines Video](graphics-diagramms/IMG_3839.mp4)
 
 Das Projekt hatte sehr hohe Ansprüche. Schlussendlich sind wir mit der Realisation unseres Projekts zufrieden. Der Roboter balanciert zwar nicht stabil aber theoretisch haben wir alles richtig gemacht. Wir wissen noch nicht ob der Fehler technischer Natur ist oder aufgrund der Steuerung. 
 Einerseits könnte das Problem daran liegen, dass unsere Motoren zu langsam reagieren, da bei jedem Richtungswechsel die Trägheit überwunden werden muss.  
