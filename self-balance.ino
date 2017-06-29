@@ -45,8 +45,8 @@ double delta;
 double pid_output = 0.0;
 double pid_input = 255; // Neigung gegenüber Senkrecht-Achse
 double setpoint = 255;
-double Kp = 10;   //Schwankstärke
-double Kd = 2; // beruhigen
+double Kp = 200;   //Schwankstärke
+double Kd = 0; // beruhigen
 double Ki = 0; // beruhigen
 PID pid(&pid_input, &pid_output, &setpoint, Kp, Ki, Kd, DIRECT);
 
@@ -153,17 +153,19 @@ void motors() {
         digitalWrite(IN4, LOW);
   }
   else {
-        igitalWrite(IN1, LOW);
+        digitalWrite(IN1, LOW);
         digitalWrite(IN2, HIGH);
   
         digitalWrite(IN3, LOW);
         digitalWrite(IN4, HIGH);
    }
    // aktivieren für die PID kontrollierte Version
-   //analogWrite(speedPinA, pid_output + 20);
-   //analogWrite(speedPinB, pid_output + 20);
-   analogWrite(speedPinA, 100);
-   analogWrite(speedPinB, 100);
+   analogWrite(speedPinA, pid_output + 20);
+   analogWrite(speedPinB, pid_output + 20);
+
+   // aktivieren für die Brute-Force Version
+   //analogWrite(speedPinA, 100);
+   //analogWrite(speedPinB, 100);
 }
 void mpu_get() {
   // if programming failed, don't try to do anything
@@ -220,7 +222,7 @@ void loop() {
     
     
     // aktivieren fuer die PID-Kontrollierte Version
-    //pid.Compute();
+    pid.Compute();
 
     //L298N
     motors();
