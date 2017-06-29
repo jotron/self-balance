@@ -35,16 +35,16 @@ int speedPinB = 10;
 // PID variablen definieren
 /* Der Sensor misst den Winkel von -180 bis + 180
  * Wir erweitern den Betrag davon auf 255 und setzen 255 als 0° und Zielpunkt für das PID 
- * Der PID gibt, dann wiederum einen Output von 0 bis 255 (235) mit dem man direkt
+ * Der PID gibt, dann wiederum einen Output von 0 bis 255 (225) mit dem man direkt
  * die Motoren ansteuern kann über PWM
 */
 double delta; // eigentliche Winkel gegenüber Senkrecht-Achse
 double pid_output = 0.0;
 double pid_input = 225; // Winkel gegenüber Senkrecht-Achse erweitert
 double setpoint = 225; // Zielwert fuer PID-Controller
-double Kp = 1;   //Proportional (Schwankstärke)
+double Kp = 0.6;   //Proportional (Schwankstärke)
+double Ki = 0.01;  // beruhigen
 double Kd = 0; // beruhigen
-double Ki = 0; // beruhigen
 
 // PID initialisieren
 PID pid(&pid_input, &pid_output, &setpoint, Kp, Ki, Kd, DIRECT);
@@ -159,12 +159,12 @@ void motors() {
    }
    
    // aktivieren für die PID kontrollierte Version
-   //analogWrite(speedPinA, pid_output + 20); // Geschwindigkeit einstellen
-   //analogWrite(speedPinB, pid_output + 35);
+   analogWrite(speedPinA, pid_output + 20); // Geschwindigkeit einstellen
+   analogWrite(speedPinB, pid_output + 20);
 
    // aktivieren für die Brute-Force Version
-    analogWrite(speedPinA, abs(delta) * 20 - 7);
-    analogWrite(speedPinB, abs(delta) * 20 + 7);
+   //analogWrite(speedPinA, abs(delta) * 20 - 7);
+   // analogWrite(speedPinB, abs(delta) * 20 + 7);
 }
 void mpu_get() {
   // Falls Programm gescheitert hat oder noch nicht bereit ist, nichts tun
@@ -221,7 +221,7 @@ void loop() {
     
     // aktivieren fuer die PID-Kontrollierte Version
     // wird eigentlich nur ausgefuehrt wenn 10ms vorbei sind
-    //pid.Compute(); // PID -Controller abfragen
+    pid.Compute(); // PID -Controller abfragen
 
     //L298N entsprechend steuern
     motors();

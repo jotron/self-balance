@@ -52,4 +52,4 @@ Um auf die richtigen Konstanten zu kommen, benutzen wir die Ziegler-Nichols Meth
 4. D experimentieren
 
 Was uns gestört hat an der PID-Bibiothek ist, dass sie nicht selber die Richtung der Motoren kontrollieren kann. Wenn wir der Bibliothek nämlich Inputs von -255(rückwärts) bis +255(vorwärts) geben und der Roboter stabil steht, wird die Bibliothek den tiefsten Wert ausgeben -255 obwohl sie eigentlich 0 ausgeben sollte. 
-An die richtigen Werte zu kommen war ebenfalls sehr schwierig. Bis der Roboter einigermassen balanciert hat, haben wir sicherlich Stunden an den Werten gefeilt.
+An die richtigen Werte zu kommen ist ebenfalls sehr schwierig. Wir sind bis zum Abgabetermin noch auf keine funktionierenden Werte gekommen. 

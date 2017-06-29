@@ -34,5 +34,9 @@ Mit einem Sensor soll der Roboter die Abneigung zur Senkrecht-Achse messen. Dara
 
 ### Fazit
 
-Das Projekt hatte sehr hohe Ansprüche. Schlussendlich sind wir mit der Realisation unseres Projekts zufrieden. Der Roboter balanciert zwar nicht stabil aber theoretisch haben wir alles richtig gemacht. Das Problem liegt daran dass unsere Motoren zu langsam reagieren. Zudem muss bei jedem Richtungswechsel die Trägheit überwunden werden.
-Das schöne an diesem Projekt ist eigentlich die lehrreiche Erfahrung. Wir haben sehr viel gelernt über einzelne Bauteile bis zu wie man ein solches Elektronik-Projekt angeht und wo eventuell Schwierigkeiten auftreten können.
+Das Projekt hatte sehr hohe Ansprüche. Schlussendlich sind wir mit der Realisation unseres Projekts zufrieden. Der Roboter balanciert zwar nicht stabil aber theoretisch haben wir alles richtig gemacht. Wir wissen noch nicht ob der Fehler technischer Natur ist oder aufgrund der Steuerung. 
+Einerseits könnte das Problem daran liegen, dass unsere Motoren zu langsam reagieren, da bei jedem Richtungswechsel die Trägheit überwunden werden muss.  
+Andernseits  könnte es daran liegen, dass wir einfach noch nicht die richtigen Parameter für den PID-Controller gefunden haben.
+Schlussendlich ist es auch möglich, dass der niedrige Aufbau das Problem ist. Die Motoren müssen nämlich innerhalb von wenigen Milisekunden unter den fallenden Überbau fahren, was vielleicht zu schnell ist.
+
+Das Schöne an diesem Projekt für uns ist eigentlich die lehrreiche Erfahrung. Wir haben sehr viel gelernt über einzelne Bauteile bis zu wie man ein solches Elektronik-Projekt angeht und wo eventuell Schwierigkeiten auftreten können.
