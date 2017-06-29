@@ -22,7 +22,7 @@ void setup()
 
 void loop() {
   
- analogWrite(speedPinA, 50); // Geschwindigkeit einstellen 0-255
+ analogWrite(speedPinA, 40); // Geschwindigkeit einstellen 0-255
  analogWrite(speedPinB, 50); 
 
  // Motor A forwaerts

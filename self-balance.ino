@@ -42,7 +42,7 @@ double delta; // eigentliche Winkel gegenüber Senkrecht-Achse
 double pid_output = 0.0;
 double pid_input = 225; // Winkel gegenüber Senkrecht-Achse erweitert
 double setpoint = 225; // Zielwert fuer PID-Controller
-double Kp = 5;   //Proportional (Schwankstärke)
+double Kp = 1;   //Proportional (Schwankstärke)
 double Kd = 0; // beruhigen
 double Ki = 0; // beruhigen
 
@@ -159,12 +159,12 @@ void motors() {
    }
    
    // aktivieren für die PID kontrollierte Version
-   analogWrite(speedPinA, pid_output + 30); // Geschwindigkeit einstellen
-   analogWrite(speedPinB, pid_output + 30);
+   //analogWrite(speedPinA, pid_output + 20); // Geschwindigkeit einstellen
+   //analogWrite(speedPinB, pid_output + 35);
 
    // aktivieren für die Brute-Force Version
-   //analogWrite(speedPinA, 100);
-   //analogWrite(speedPinB, 100);
+    analogWrite(speedPinA, abs(delta) * 20 - 7);
+    analogWrite(speedPinB, abs(delta) * 20 + 7);
 }
 void mpu_get() {
   // Falls Programm gescheitert hat oder noch nicht bereit ist, nichts tun
@@ -221,7 +221,7 @@ void loop() {
     
     // aktivieren fuer die PID-Kontrollierte Version
     // wird eigentlich nur ausgefuehrt wenn 10ms vorbei sind
-    pid.Compute(); // PID -Controller abfragen
+    //pid.Compute(); // PID -Controller abfragen
 
     //L298N entsprechend steuern
     motors();
