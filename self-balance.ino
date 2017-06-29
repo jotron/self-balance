@@ -1,10 +1,8 @@
-// I2Cdev and MPU6050 must be installed as libraries, or else the .cpp/.h files
-// for both classes must be in the include path of your project
+// Alle Bibliotheken muessen installiert sein.
 #include "PID_v1.h"
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
-// is used in I2Cdev.h
+// Wire-Library nur in gewissen Faellen benoetigt
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
 #endif
@@ -13,7 +11,7 @@
 MPU6050 mpu;
 
 // Variablen definieren MPU
-bool dmpReady = false;  // set true if DMP init was successful
+bool dmpReady = false;  // wird auf True gesetzt falls Verbindung erfolgreich
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
 uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
@@ -25,35 +23,33 @@ VectorFloat gravity;    // [x, y, z]            gravity vector
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
 // Input Motor A
-int speedcalc = 0;
 int IN1 = 4;
 int IN2 = 5;
 int speedPinA = 9;
 
-//Input Motor B
+// Input Motor B
 int IN3 = 6;
 int IN4 = 7;
 int speedPinB = 10;
 
-//PID
+// PID variablen definieren
 /* Der Sensor misst den Winkel von -180 bis + 180
  * Wir erweitern den Betrag davon auf 255 und setzen 255 als 0° und Zielpunkt für das PID 
  * Der PID gibt, dann wiederum einen Output von 0 bis 255 (235) mit dem man direkt
  * die Motoren ansteuern kann über PWM
 */
-double delta;
+double delta; // eigentliche Winkel gegenüber Senkrecht-Achse
 double pid_output = 0.0;
-double pid_input = 255; // Neigung gegenüber Senkrecht-Achse
-double setpoint = 255;
-double Kp = 200;   //Schwankstärke
+double pid_input = 225; // Winkel gegenüber Senkrecht-Achse erweitert
+double setpoint = 225; // Zielwert fuer PID-Controller
+double Kp = 5;   //Proportional (Schwankstärke)
 double Kd = 0; // beruhigen
 double Ki = 0; // beruhigen
+
+// PID initialisieren
 PID pid(&pid_input, &pid_output, &setpoint, Kp, Ki, Kd, DIRECT);
 
-
-// ================================================================
-// ===              MPUINTERRUPT DETECTION ROUTINE              ===
-// ================================================================
+// Testet Unterbrechung mit MPU
 volatile bool mpuInterrupt = false;
 // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
@@ -64,7 +60,7 @@ void dmpDataReady() {
 // ===                      INITIAL SETUP                       ===
 // ================================================================
 void mpu_init() {
-  // join I2C bus (I2Cdev library doesn't do this automatically)
+    // I2C Verbindung initialisieren
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin();
         TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz)
@@ -72,16 +68,16 @@ void mpu_init() {
         Fastwire::setup(400, true);
     #endif
 
-    // initialize serial communication
+    // Serielle Kommunikation initialisieren sowie MPU initialisieren
     Serial.begin(9600);
     Serial.println(F("Initializing I2C devices..."));
     mpu.initialize();
 
-    // verify connection
+    // Verbindung testen
     Serial.println(F("Testing device connections..."));
     Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
-    // load and configure the DMP
+    // DMP initialisieren
     Serial.println(F("Initializing DMP..."));
     devStatus = mpu.dmpInitialize();
 
@@ -93,22 +89,22 @@ void mpu_init() {
     mpu.setYAccelOffset(-329);
     mpu.setZAccelOffset(1230);
 
-    // make sure it worked (returns 0 if so)
+    //Falls erfolgreich verbunden DMP gestartet
     if (devStatus == 0) {
-        // turn on the DMP, now that it's ready
+        // DMP anstellen
         Serial.println(F("Enabling DMP..."));
         mpu.setDMPEnabled(true);
 
-        // enable Arduino interrupt detection
+        // Unterbruch-Routine aktivieren
         Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
         attachInterrupt(0, dmpDataReady, RISING);
         mpuIntStatus = mpu.getIntStatus();
 
-        // set our DMP Ready flag so the main loop() function knows it's okay to use it
+        // dmpReady auf true setzen, damit der Main loop starten kann
         Serial.println(F("DMP ready! Waiting for first interrupt..."));
         dmpReady = true;
 
-        // get expected DMP packet size for later comparison
+        // erwartete Packetgroesse bekommen fuer spaeteren Vergleich
         packetSize = mpu.dmpGetFIFOPacketSize();
     } else {
         // ERROR!
@@ -123,7 +119,7 @@ void mpu_init() {
 }
 void setup() {
 
-    //Accelereometer-Garoskop initialisieren
+    //Accelereometer-Gyroskop initialisieren
     mpu_init();
 
 
@@ -136,15 +132,16 @@ void setup() {
     pinMode(speedPinB,OUTPUT);
 
     //Setup PID
-    pid.SetMode(AUTOMATIC);
-    pid.SetSampleTime(10);
-    //pid.SetOutputLimits(0, 512);
+    pid.SetMode(AUTOMATIC); // PID aktivieren
+    pid.SetSampleTime(10); // PID nur alle 10ms neu berechnen
+    pid.SetOutputLimits(0, 225); // von 0 bis 225 weil + 30 MotorenTraegheit
 }
 
 // ================================================================
 // ===                         CORE                             ===
 // ================================================================
 void motors() {
+  // Falls Winkel positiv, Motoren in die richtige Richtung antreiben
   if (delta > 0) {
         digitalWrite(IN1, HIGH);
         digitalWrite(IN2, LOW);
@@ -152,6 +149,7 @@ void motors() {
         digitalWrite(IN3, HIGH);
         digitalWrite(IN4, LOW);
   }
+  // Falls Winkel negativ, Motoren in die andere Richtung antreiben
   else {
         digitalWrite(IN1, LOW);
         digitalWrite(IN2, HIGH);
@@ -159,73 +157,74 @@ void motors() {
         digitalWrite(IN3, LOW);
         digitalWrite(IN4, HIGH);
    }
+   
    // aktivieren für die PID kontrollierte Version
-   analogWrite(speedPinA, pid_output + 20);
-   analogWrite(speedPinB, pid_output + 20);
+   analogWrite(speedPinA, pid_output + 30); // Geschwindigkeit einstellen
+   analogWrite(speedPinB, pid_output + 30);
 
    // aktivieren für die Brute-Force Version
    //analogWrite(speedPinA, 100);
    //analogWrite(speedPinB, 100);
 }
 void mpu_get() {
-  // if programming failed, don't try to do anything
+  // Falls Programm gescheitert hat oder noch nicht bereit ist, nichts tun
     if (!dmpReady) return;
 
-    // wait for MPU interrupt or extra packet(s) available
+    // warten auf MPU-Signal
     while (!mpuInterrupt && fifoCount < packetSize) {
-        // other program behavior stuff here
-        // .
+      //
     }
 
-    // reset interrupt flag and get INT_STATUS byte
+    // mpuInterrupt wieder auf false resetten und INT_STATUS empfangen
     mpuInterrupt = false;
     mpuIntStatus = mpu.getIntStatus();
 
-    // get current FIFO count
+    // Aktuellen FIFOBUFFER zaehlen
     fifoCount = mpu.getFIFOCount();
 
-    // check for overflow (this should never happen unless our code is too inefficient)
+    // Overflow ueberpruefen und falls ja FIFO leeren
     if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
         // reset so we can continue cleanly
         mpu.resetFIFO();
         Serial.println(F("FIFO overflow!"));
 
-    // otherwise, check for DMP data ready interrupt (this should happen frequently)
+    // Sonst fuer Daten bereit zum ablesen testen
     } else if (mpuIntStatus & 0x02) {
-        // wait for correct available data length, should be a VERY short wait
+        // Auf korrekte Paketlaenge warten
         while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
 
-        // read a packet from FIFO
+        // Paket lesen
         mpu.getFIFOBytes(fifoBuffer, packetSize);
 
-        // track FIFO count here in case there is > 1 packet available
-        // (this lets us immediately read more without waiting for an interrupt)
+        // Falls mehr als ein Paket verfuegbar FIFO zaehlen
         fifoCount -= packetSize;
 
-        // display Euler angles in degrees
+        // Eulerschen Winkel abfragen, berechnet vom interen Chip des Sensors
         mpu.dmpGetQuaternion(&q, fifoBuffer);
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-        
+        // Winkel in Grad abspeichern (-90 bis +90)
         delta = ypr[2] * 180/M_PI;
-        pid_input = 255 - abs(ypr[2] * 180/M_PI) * 2.83;
+        // Winkel erweitern auf (0 bis 255) und umkehren (255 entspricht 0-Grad Winkel)
+        pid_input = 225 - abs(ypr[2] * 180/M_PI) * 2.5;
     
     }
 }
 void loop() {
-    // Winkelmessung
-    mpu_get();
+    mpu_get(); // Winkelmessung bekommen
+    
     Serial.print("PID INPUT: " + String(pid_input));
     Serial.print(" PID OUTPUT: " + String(pid_output));
     Serial.println(" Winkel: " + String(delta));
     
     
     // aktivieren fuer die PID-Kontrollierte Version
-    pid.Compute();
+    // wird eigentlich nur ausgefuehrt wenn 10ms vorbei sind
+    pid.Compute(); // PID -Controller abfragen
 
-    //L298N
+    //L298N entsprechend steuern
     motors();
 
-    delay(10);
+    //delay(10);
 }

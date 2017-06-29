@@ -1,18 +1,17 @@
-// Program: Control 2 DC motors using L298N H Bridge http://qqtrading.com.my/stepper-motor-driver-module-L298N
-
-// Definitions Arduino pins connected to input H Bridge
+// PINS definieren Motor A
 int IN1 = 4;
 int IN2 = 5;
-int speedPinA = 9; // Needs to be a PWM pin to be able to control motor speed
+int speedPinA = 9; // PWM
 
+// PINS definieren Motor B
 int IN3 = 6;
 int IN4 = 7;
-int speedPinB = 10; // Needs to be a PWM pin to be able to control motor speed
+int speedPinB = 10; // PWM
 
 
 void setup()
 {
- // Set the output pins
+ // Ausgabe PINS
  pinMode(IN1, OUTPUT);
  pinMode(IN2, OUTPUT);
  pinMode(IN3, OUTPUT);
@@ -22,34 +21,37 @@ void setup()
 }
 
 void loop() {
- analogWrite(speedPinA, 100); // Sets speed variable via PWM
- analogWrite(speedPinB, 100); // Sets speed variable via PWM
+  
+ analogWrite(speedPinA, 50); // Geschwindigkeit einstellen 0-255
+ analogWrite(speedPinB, 50); 
 
- // Motor A (MPU--Seite von Kühler-Seite) forwärts
+ // Motor A forwaerts
  digitalWrite(IN1, HIGH);
  digitalWrite(IN2, LOW);
  delay(2000);
- // festhalten
- digitalWrite(IN1, LOW);
- digitalWrite(IN2, HIGH);
- delay(2000);
+ 
+ // Motor A rueckwaerts
+ // digitalWrite(IN1, LOW);
+ // digitalWrite(IN2, HIGH);
+ // delay(2000);
 
- /*
- // Rotates the Motor A counter-clockwise
- digitalWrite(IN1, LOW);
- digitalWrite(IN2, HIGH);
- delay(2000);
- // Motor A
- digitalWrite(IN1, HIGH);
- digitalWrite(IN2, HIGH);
- delay(500);
+ // Motor A deaktivieren
+ // digitalWrite(IN1, LOW);
+ // digitalWrite(IN2, LOW);
+ // delay(2000);
 
- // Rotates the Motor B counter-clockwise
- digitalWrite(IN3, LOW);
- digitalWrite(IN4, HIGH);
- delay(2000);
- // Motor B
+ // Motor B forwaerts
  digitalWrite(IN3, HIGH);
- digitalWrite(IN4, HIGH);
- delay(500);*/
+ digitalWrite(IN4, LOW);
+ delay(2000);
+ 
+ // Motor B rueckwaerts
+ // digitalWrite(IN3, LOW);
+ // digitalWrite(IN4, HIGH);
+ // delay(2000);
+
+ // Motor B deaktivieren
+ // digitalWrite(IN3, LOW);
+ // digitalWrite(IN4, LOW);
+ // delay(2000);
 }
